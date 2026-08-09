@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cycloalkanes 3D — Ring Strain</title>
+<style>
+:root{
+  --bg:#f5faff; --panel:#fff; --ink:#17324a; --muted:#6d8193; --line:#d9e6f0;
+  --blue:#1769aa; --gold:#d7a02f; --green:#2f8b57; --amber:#c5841a; --red:#c74848;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--ink);background:linear-gradient(180deg,#fbfdff,#eef6fb)
+}
+.wrap{max-width:1580px;margin:auto;padding:22px}
+h1{margin:0 0 7px;font-size:clamp(28px,3vw,42px)}
+.sub{margin:0;color:var(--muted);line-height:1.5;max-width:1180px}
+.toolbar{
+  margin-top:15px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;box-shadow:0 7px 22px rgba(23,50,74,.05)
+}
+.toolbar label{display:flex;align-items:center;gap:7px;font-size:14px}
+input[type=checkbox]{accent-color:var(--blue)}
+button{
+  border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;
+  padding:9px 12px;font-size:14px;cursor:pointer
+}
+button:hover{border-color:#a9bfd1}
+.ref{
+  margin-top:12px;padding:11px 13px;border:1px solid #dbe8f3;border-radius:12px;
+  background:#f9fcff;color:var(--muted);font-size:13px;line-height:1.45
+}
+.grid{
+  margin-top:17px;display:grid;grid-template-columns:repeat(2,minmax(390px,1fr));gap:16px
+}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 12px 30px rgba(23,50,74,.07)
+}
+.cardhead{
+  padding:13px 16px;border-bottom:1px solid var(--line);background:#fbfdff;
+  display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.name{font-size:20px;font-weight:750}
+.formula{font-weight:750;color:var(--blue)}
+.view{
+  height:380px;position:relative;touch-action:none;
+  background:radial-gradient(circle at 50% 43%,#fff 0%,#f6fbff 68%,#edf5fb 100%)
+}
+canvas{display:block;width:100%;height:100%;cursor:grab}
+canvas:active{cursor:grabbing}
+.hint{
+  position:absolute;left:12px;bottom:10px;padding:7px 9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.92);border-radius:10px;color:var(--muted);font-size:12px
+}
+.details{padding:14px 16px 16px}
+.facts{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:14px;line-height:1.4
+}
+.strain{
+  margin-top:11px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);
+  font-size:14px;line-height:1.45
+}
+.high{background:#fff6f6;border-color:#efcccc}
+.medium{background:#fffaf1;border-color:#efdcb8}
+.low{background:#f7fcf8;border-color:#cfe6d7}
+.minimal{background:#f6fbff;border-color:#cfe2f1}
+.barwrap{margin-top:10px}
+.barlabel{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+.bar{height:9px;background:#edf2f6;border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:99px}
+.legend{
+  margin-top:14px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:13px
+}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.footer{margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.view{height:350px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cycloalkanes: 3D shape and ring strain</h1>
+  <p class="sub">
+    Drag each model to rotate it. Compare the C–C–C bond angles with the preferred tetrahedral angle of
+    <b>109.5°</b>. The models use source-guided conformations rather than the flat polygon drawings normally used in skeletal formulae.
+  </p>
+
+  <div class="toolbar">
+    <label><input type="checkbox" id="angles" checked> Show highlighted C–C–C angle</label>
+    <label><input type="checkbox" id="hydrogens" checked> Show hydrogens</label>
+    <label><input type="checkbox" id="conclusions" checked> Show ring-strain conclusion</label>
+    <label><input type="checkbox" id="autorotate"> Auto-rotate</label>
+    <button id="reset">Reset all views</button>
+  </div>
+
+  <div class="ref">
+    Reference guide used for the teaching values: Chemistry LibreTexts, Wade, “Cycloalkanes and Ring Strain”.
+    Bond-angle labels are approximate because real rings vibrate and, except for cyclopropane, are not flat regular polygons.
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <div class="cardhead"><span class="name">Cyclopropane</span><span class="formula">C<sub>3</sub>H<sub>6</sub></span></div>
+      <div class="view"><canvas id="cv0"></canvas><div class="hint">Drag to rotate</div></div>
+      <div class="details">
+        <div class="facts">
+          <div><b>Ring:</b> 3-membered</div>
+          <div><b>C–C–C:</b> 60°</div>
+          <div><b>Rotation:</b> essentially none</div>
+        </div>
+        <div class="strain high conclusion">
+          <b>High ring strain.</b> The 60° C–C–C angle is far from 109.5°. The ring also has substantial eclipsing / torsional strain.
+          <div class="barwrap"><div class="barlabel"><span>Source total strain</span><span>27.7 kcal mol⁻¹</span></div><div class="bar"><div class="fill" style="width:100%;background:#c74848"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardhead"><span class="name">Cyclobutane</span><span class="formula">C<sub>4</sub>H<sub>8</sub></span></div>
+      <div class="view"><canvas id="cv1"></canvas><div class="hint">Drag to rotate</div></div>
+      <div class="details">
+        <div class="facts">
+          <div><b>Ring:</b> 4-membered</div>
+          <div><b>C–C–C:</b> ≈88° in puckered form</div>
+          <div><b>Why pucker?</b> reduces eclipsing</div>
+        </div>
+        <div class="strain high conclusion">
+          <b>High ring strain, but slightly less than cyclopropane.</b> Puckering reduces torsional strain, but the C–C–C angles remain far from 109.5°.
+          <div class="barwrap"><div class="barlabel"><span>Source total strain</span><span>26.3 kcal mol⁻¹</span></div><div class="bar"><div class="fill" style="width:95%;background:#c74848"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardhead"><span class="name">Cyclopentane</span><span class="formula">C<sub>5</sub>H<sub>10</sub></span></div>
+      <div class="view"><canvas id="cv2"></canvas><div class="hint">Drag to rotate</div></div>
+      <div class="details">
+        <div class="facts">
+          <div><b>Ring:</b> 5-membered</div>
+          <div><b>C–C–C:</b> ≈107–108°</div>
+          <div><b>Effect:</b> little angle strain</div>
+        </div>
+        <div class="strain medium conclusion">
+          <b>Much less ring strain.</b> Its C–C–C angles are close to 109.5°. Puckering removes much of the eclipsing strain, although some torsional strain remains.
+          <div class="barwrap"><div class="barlabel"><span>Source total strain</span><span>6.5 kcal mol⁻¹</span></div><div class="bar"><div class="fill" style="width:23%;background:#c5841a"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardhead"><span class="name">Cyclohexane</span><span class="formula">C<sub>6</sub>H<sub>12</sub></span></div>
+      <div class="view"><canvas id="cv3"></canvas><div class="hint">Drag to rotate</div></div>
+      <div class="details">
+        <div class="facts">
+          <div><b>Ring:</b> 6-membered</div>
+          <div><b>C–C–C:</b> ≈109.5° in idealised chair</div>
+          <div><b>Effect:</b> nearly staggered bonds</div>
+        </div>
+        <div class="strain minimal conclusion">
+          <b>Minimal ring strain.</b> The chair conformation keeps bond angles close to the tetrahedral value and virtually eliminates angle and eclipsing strain.
+          <div class="barwrap"><div class="barlabel"><span>Source total strain</span><span>0.4 kcal mol⁻¹</span></div><div class="bar"><div class="fill" style="width:2%;background:#2f8b57"></div></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:#43596c"></i> C</span>
+    <span><i class="dot" style="background:#fff"></i> H</span>
+    <span><i class="dot" style="background:#d7a02f"></i> angle label</span>
+  </div>
+  <div class="footer">The gold arc is drawn at a carbon atom between its two neighbouring C–C bonds, so it represents a C–C–C bond angle. Hydrogens are included only to help visualise eclipsing and puckering.</div>
+</div>
+
+<script>
+(() => {
+const COLORS={C:"#43596c",H:"#ffffff",bond:"#718395",angle:"#d7a02f"};
+const RADII={C:.27,H:.16};
+const V={
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  len:a=>Math.hypot(a[0],a[1],a[2]),
+  norm:a=>{let l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]},
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]
+};
+function shade(hex,amt){
+  let n=parseInt(hex.slice(1),16),r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)
+}
+function angle(prev,cur,next){
+  let a=V.norm(V.sub(prev,cur)),b=V.norm(V.sub(next,cur));
+  let c=Math.max(-1,Math.min(1,V.dot(a,b)));
+  return Math.acos(c)*180/Math.PI
+}
+function rot(p,rx,ry){
+  let [x,y,z]=p,c=Math.cos(rx),s=Math.sin(rx);
+  [y,z]=[y*c-z*s,y*s+z*c];
+  c=Math.cos(ry);s=Math.sin(ry);
+  [x,z]=[x*c+z*s,-x*s+z*c];
+  return [x,y,z]
+}
+function localHydrogenDirs(prev,cur,next){
+  const u=V.norm(V.sub(prev,cur)),v=V.norm(V.sub(next,cur));
+  let base=V.norm(V.mul(V.add(u,v),-1));
+  let n=V.norm(V.cross(u,v));
+  if(V.len(n)<0.2)n=[0,0,1];
+  const alpha=54.75*Math.PI/180;
+  return [
+    V.norm(V.add(V.mul(base,Math.cos(alpha)),V.mul(n,Math.sin(alpha)))),
+    V.norm(V.add(V.mul(base,Math.cos(alpha)),V.mul(n,-Math.sin(alpha))))
+  ]
+}
+function centred(arr){
+  let c=[0,0,0];
+  arr.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});
+  c=c.map(x=>x/arr.length);
+  return arr.map(p=>V.sub(p,c))
+}
+function makeRing(type){
+  let ring;
+  if(type==="cyclopropane"){
+    const r=1.20;
+    ring=[];
+    for(let i=0;i<3;i++){
+      let t=Math.PI/2+i*2*Math.PI/3;
+      ring.push([r*Math.cos(t),r*Math.sin(t),0]);
+    }
+  } else if(type==="cyclobutane"){
+    const a=0.88,h=a*0.1901618137;
+    ring=[[-a,a,h],[a,a,-h],[a,-a,h],[-a,-a,-h]];
+  } else if(type==="cyclopentane"){
+    ring=[
+      [0.000, 0.840, 0.120],
+      [0.805, 0.266,-0.030],
+      [0.500,-0.686,-0.030],
+      [-0.500,-0.686,-0.030],
+      [-0.805, 0.266,-0.030]
+    ];
+    ring=centred(ring);
+  } else {
+    ring=[
+      [ 0.94280194, 0.00000000, 0.33335342],
+      [ 0.47140097, 0.81649043, 0.00000000],
+      [-0.47140097, 0.81649043, 0.33335342],
+      [-0.94280194, 0.00000000, 0.00000000],
+      [-0.47140097,-0.81649043, 0.33335342],
+      [ 0.47140097,-0.81649043, 0.00000000]
+    ];
+    ring=ring.map(p=>V.mul(p,1.35));
+  }
+
+  const atoms=ring.map(p=>({el:"C",pos:p}));
+  const bonds=[];
+  for(let i=0;i<ring.length;i++)bonds.push([i,(i+1)%ring.length]);
+
+  for(let i=0;i<ring.length;i++){
+    const [h1,h2]=localHydrogenDirs(ring[(i-1+ring.length)%ring.length],ring[i],ring[(i+1)%ring.length]);
+    atoms.push({el:"H",pos:V.add(ring[i],V.mul(h1,.90))}); bonds.push([i,atoms.length-1]);
+    atoms.push({el:"H",pos:V.add(ring[i],V.mul(h2,.90))}); bonds.push([i,atoms.length-1]);
+  }
+
+  return {ring,atoms,bonds}
+}
+function roundRect(ctx,x,y,w,h,r){
+  let rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()
+}
+class View{
+  constructor(id,type){
+    this.canvas=document.getElementById(id);this.ctx=this.canvas.getContext("2d");
+    this.type=type;this.data=makeRing(type);this.rx=-.25;this.ry=.40;this.drag=false;this.last=[0,0];
+    new ResizeObserver(()=>this.resize()).observe(this.canvas.parentElement);this.bind();this.resize()
+  }
+  bind(){
+    this.canvas.onpointerdown=e=>{this.drag=true;this.last=[e.clientX,e.clientY];this.canvas.setPointerCapture(e.pointerId)};
+    this.canvas.onpointermove=e=>{
+      if(!this.drag)return;
+      let dx=e.clientX-this.last[0],dy=e.clientY-this.last[1];this.last=[e.clientX,e.clientY];
+      this.rx+=dy*.008;this.ry+=dx*.008;this.draw()
+    };
+    this.canvas.onpointerup=()=>this.drag=false;this.canvas.onpointercancel=()=>this.drag=false
+  }
+  resize(){
+    let r=this.canvas.parentElement.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);
+    this.canvas.width=Math.round(r.width*d);this.canvas.height=Math.round(r.height*d);
+    this.canvas.style.width=r.width+"px";this.canvas.style.height=r.height+"px";
+    this.ctx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;this.draw()
+  }
+  reset(){this.rx=-.25;this.ry=.40;this.draw()}
+  proj(p){
+    let q=rot(p,this.rx,this.ry),cam=7.0,per=cam/(cam-q[2]),sc=Math.min(this.w,this.h)*.17;
+    return {x:this.w/2+q[0]*sc*per,y:this.h/2-q[1]*sc*per,z:q[2],s:per}
+  }
+  bond(a,b){
+    let x=this.ctx,g=x.createLinearGradient(a.x,a.y,b.x,b.y);
+    g.addColorStop(0,"#8c9baa");g.addColorStop(1,"#586d80");
+    x.strokeStyle=g;x.lineWidth=7*Math.min(a.s,b.s);x.lineCap="round";
+    x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()
+  }
+  atom(a,p){
+    let x=this.ctx,r=RADII[a.el]*Math.min(this.w,this.h)*.09*p.s,base=COLORS[a.el];
+    let g=x.createRadialGradient(p.x-r*.35,p.y-r*.38,r*.1,p.x,p.y,r);
+    g.addColorStop(0,"#fff");g.addColorStop(.18,base);g.addColorStop(1,shade(base,-34));
+    x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,r,0,Math.PI*2);x.fill();
+    x.strokeStyle="rgba(20,45,65,.2)";x.lineWidth=1;x.stroke();
+    if(a.el==="C"){
+      x.font=`700 ${Math.max(10,Math.min(15,r*.9))}px Inter,system-ui,sans-serif`;
+      x.textAlign="center";x.textBaseline="middle";x.fillStyle="#fff";x.fillText("C",p.x,p.y)
+    }
+  }
+  drawAngleArc(vertex,p1,p2,txt){
+    const x=this.ctx;
+    const a1=Math.atan2(p1.y-vertex.y,p1.x-vertex.x);
+    const a2=Math.atan2(p2.y-vertex.y,p2.x-vertex.x);
+    let d=a2-a1;
+    while(d<=-Math.PI)d+=Math.PI*2;
+    while(d>Math.PI)d-=Math.PI*2;
+    const r=Math.max(24, Math.min(42, Math.min(this.w,this.h)*0.075));
+    const end=a1+d;
+
+    x.save();
+    x.beginPath();
+    x.moveTo(vertex.x,vertex.y);
+    x.arc(vertex.x,vertex.y,r,a1,end,d<0);
+    x.closePath();
+    x.fillStyle="rgba(215,160,47,.14)";
+    x.fill();
+
+    x.beginPath();
+    x.arc(vertex.x,vertex.y,r,a1,end,d<0);
+    x.strokeStyle="#d7a02f";
+    x.lineWidth=4;
+    x.lineCap="round";
+    x.stroke();
+
+    for(const a of [a1,end]){
+      const x1=vertex.x+Math.cos(a)*(r-5), y1=vertex.y+Math.sin(a)*(r-5);
+      const x2=vertex.x+Math.cos(a)*(r+5), y2=vertex.y+Math.sin(a)*(r+5);
+      x.beginPath(); x.moveTo(x1,y1); x.lineTo(x2,y2);
+      x.strokeStyle="#d7a02f"; x.lineWidth=2; x.stroke();
+    }
+
+    const mid=a1+d/2;
+    const lr=r+25;
+    const lx=vertex.x+Math.cos(mid)*lr;
+    const ly=vertex.y+Math.sin(mid)*lr;
+    x.font="700 13px Inter,system-ui,sans-serif";
+    const w=x.measureText(txt).width+14,h=23;
+    x.fillStyle="rgba(215,160,47,.97)";
+    roundRect(x,lx-w/2,ly-h/2,w,h,8);
+    x.fill();
+    x.fillStyle="#fff";
+    x.textAlign="center";x.textBaseline="middle";
+    x.fillText(txt,lx,ly+.5);
+    x.restore();
+  }
+  draw(){
+    if(!this.w)return;
+    let x=this.ctx;x.clearRect(0,0,this.w,this.h);
+    const showH=document.getElementById("hydrogens").checked;
+    const P=this.data.atoms.map(a=>this.proj(a.pos));
+    this.data.bonds
+      .filter(([i,j])=>showH||(this.data.atoms[i].el==="C"&&this.data.atoms[j].el==="C"))
+      .map(([i,j])=>({i,j,z:(P[i].z+P[j].z)/2})).sort((a,b)=>a.z-b.z)
+      .forEach(o=>this.bond(P[o.i],P[o.j]));
+    this.data.atoms.map((a,i)=>({a,i,z:P[i].z}))
+      .filter(o=>showH||o.a.el==="C").sort((a,b)=>a.z-b.z).forEach(o=>this.atom(o.a,P[o.i]));
+    if(document.getElementById("angles").checked){
+      const n=this.data.ring.length;
+      const v=this.proj(this.data.ring[0]);
+      const pPrev=this.proj(this.data.ring[n-1]);
+      const pNext=this.proj(this.data.ring[1]);
+      const txt=this.type==="cyclopropane" ? "60°" :
+                this.type==="cyclobutane"  ? "≈88°" :
+                this.type==="cyclopentane" ? "≈107–108°" :
+                                             "≈109.5°";
+      this.drawAngleArc(v,pPrev,pNext,txt);
+    }
+  }
+}
+const views=[new View("cv0","cyclopropane"),new View("cv1","cyclobutane"),new View("cv2","cyclopentane"),new View("cv3","cyclohexane")];
+function redraw(){
+  views.forEach(v=>v.draw());
+  document.querySelectorAll(".conclusion").forEach(el=>el.style.display=document.getElementById("conclusions").checked?"":"none")
+}
+["angles","hydrogens","conclusions"].forEach(id=>document.getElementById(id).addEventListener("change",redraw));
+document.getElementById("reset").onclick=()=>views.forEach(v=>v.reset());
+let last=performance.now();
+function tick(t){
+  let dt=(t-last)/1000;last=t;
+  if(document.getElementById("autorotate").checked){
+    views.forEach(v=>{if(!v.drag){v.ry+=dt*.40;v.draw()}})
+  }
+  requestAnimationFrame(tick)
+}
+requestAnimationFrame(tick);redraw()
+})();
+</script>
+</body>
+</html>
