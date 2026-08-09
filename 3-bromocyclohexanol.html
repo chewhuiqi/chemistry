@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3-Bromocyclohexanol — 4 stereoisomers with bent OH</title>
+<style>
+:root{
+  --bg:#f5faff; --panel:#ffffff; --ink:#17324a; --muted:#708293; --line:#dce8f2;
+  --blue:#1769aa; --gold:#e0aa3e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(180deg,#fbfdff,#eef6fb);
+}
+.wrap{max-width:1500px;margin:auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+h1{margin:0 0 8px;font-size:clamp(28px,3vw,42px)}
+p{margin:0;color:var(--muted);line-height:1.45}
+button{
+  border:1px solid var(--line);background:white;color:var(--ink);border-radius:10px;
+  padding:10px 14px;font-size:14px;cursor:pointer
+}
+button:hover{border-color:#a9bfd1}
+.info{
+  margin-top:14px;background:white;border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;line-height:1.45
+}
+.info b{color:var(--blue)}
+.pair{margin-top:18px}
+.pairtitle{
+  margin:0 0 8px;font-size:18px;font-weight:700;color:var(--ink)
+}
+.stage{display:grid;grid-template-columns:1fr 74px 1fr;gap:0}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 12px 28px rgba(23,50,74,.07)
+}
+.head{
+  padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;background:#fbfdff
+}
+.view{
+  height:430px;position:relative;touch-action:none;
+  background:radial-gradient(circle at 50% 45%,white,#f6fbff 70%,#edf5fb)
+}
+canvas{display:block;width:100%;height:100%;cursor:grab}
+canvas:active{cursor:grabbing}
+.hint{
+  position:absolute;left:12px;bottom:10px;background:rgba(255,255,255,.92);
+  border:1px solid var(--line);border-radius:10px;padding:7px 9px;font-size:12px;color:var(--muted)
+}
+.mirror{display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted)}
+.mirror:before{
+  content:"";position:absolute;top:34px;bottom:34px;width:2px;
+  background:repeating-linear-gradient(to bottom,#9fb6c8 0 8px,transparent 8px 16px)
+}
+.mirror span{
+  z-index:1;background:var(--bg);border:1px solid var(--line);border-radius:999px;
+  padding:6px 8px;font-size:12px;transform:rotate(-90deg);white-space:nowrap
+}
+.key{
+  margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  color:var(--muted);font-size:13px
+}
+.key span{display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.small{font-size:12px;color:var(--muted)}
+@media(max-width:960px){
+  .stage{grid-template-columns:1fr;gap:10px}
+  .mirror{height:42px}
+  .mirror:before{left:24px;right:24px;top:20px;bottom:auto;height:2px;width:auto;
+    background:repeating-linear-gradient(to right,#9fb6c8 0 8px,transparent 8px 16px)}
+  .mirror span{transform:none}
+  .view{height:360px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>3-Bromocyclohexanol: 4 stereoisomers</h1>
+      <p>Drag any molecule to rotate it. The structures are shown as <b>two enantiomeric pairs</b>.</p>
+    </div>
+    <button id="resetAll">Reset all views</button>
+  </div>
+
+  <div class="info">
+    The molecule is organised as <b>4 stereoisomers total</b>, in <b>2 enantiomeric pairs</b>.
+    <b>Hydrogen atoms bonded to the remaining carbon atoms are not shown to avoid confusion and keep the stereochemistry clear.</b>
+  </div>
+
+  <div class="pair">
+    <div class="pairtitle">Enantiomer pair 1</div>
+    <div class="stage">
+      <div class="card">
+        <div class="head">Stereoisomer 1</div>
+        <div class="view"><canvas id="c1"></canvas><div class="hint">Drag to rotate</div></div>
+      </div>
+      <div class="mirror"><span>mirror plane</span></div>
+      <div class="card">
+        <div class="head">Stereoisomer 2</div>
+        <div class="view"><canvas id="c2"></canvas><div class="hint">Drag to rotate</div></div>
+      </div>
+    </div>
+    <div class="small" style="margin-top:6px">These two are mirror images of each other.</div>
+  </div>
+
+  <div class="pair">
+    <div class="pairtitle">Enantiomer pair 2</div>
+    <div class="stage">
+      <div class="card">
+        <div class="head">Stereoisomer 3</div>
+        <div class="view"><canvas id="c3"></canvas><div class="hint">Drag to rotate</div></div>
+      </div>
+      <div class="mirror"><span>mirror plane</span></div>
+      <div class="card">
+        <div class="head">Stereoisomer 4</div>
+        <div class="view"><canvas id="c4"></canvas><div class="hint">Drag to rotate</div></div>
+      </div>
+    </div>
+    <div class="small" style="margin-top:6px">These two are the second enantiomeric pair.</div>
+  </div>
+
+  <div class="key">
+    <span><i class="dot" style="background:#43596c"></i> C</span>
+    <span><i class="dot" style="background:#e74c3c"></i> O</span>
+    <span><i class="dot" style="background:#ffffff"></i> H</span>
+    <span><i class="dot" style="background:#7b2940"></i> Br</span>
+    <span><i class="dot" style="background:#e0aa3e"></i> chiral carbon C*</span>
+  </div>
+</div>
+
+<script>
+(() => {
+const COLORS = {C:"#43596c", O:"#e74c3c", Br:"#7b2940", H:"#ffffff", star:"#e0aa3e", bond:"#718395"};
+const RADII = {C:.28, O:.25, Br:.34, H:.18};
+
+// Chair-like ring geometry
+const ring = [
+  [ 0.00,  1.35,  0.34], // C1* (OH/H)
+  [ 1.18,  0.68, -0.34], // C2
+  [ 1.18, -0.68,  0.34], // C3* (Br/H)
+  [ 0.00, -1.35, -0.34], // C4
+  [-1.18, -0.68,  0.34], // C5
+  [-1.18,  0.68, -0.34]  // C6
+];
+
+const V = {
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
+  norm:(a)=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]},
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]
+};
+
+function tetra(cur, prev, next){
+  const u = V.norm(V.sub(prev, cur));
+  const v = V.norm(V.sub(next, cur));
+  let base = V.norm(V.mul(V.add(u, v), -1));
+  let n = V.norm(V.cross(u, v));
+  if (n[2] < 0) n = V.mul(n, -1);
+  const a = Math.cos(56*Math.PI/180), b = Math.sin(56*Math.PI/180);
+  return [
+    V.norm(V.add(V.mul(base, a), V.mul(n, b))),   // front-ish
+    V.norm(V.add(V.mul(base, a), V.mul(n,-b)))    // back-ish
+  ];
+}
+
+function bentOHHydrogenDirection(odir){
+  // Create a visually bent O-H direction relative to the C-O bond
+  let side = V.cross(odir, [0,1,0]);
+  if (Math.hypot(side[0], side[1], side[2]) < 0.15) {
+    side = V.cross(odir, [1,0,0]);
+  }
+  side = V.norm(side);
+  return V.norm(V.add(V.mul(odir, 0.55), V.mul(side, 0.85)));
+}
+
+// pair = 1 or 2; mirror = true/false
+function build(pair, mirror){
+  const atoms = [], bonds = [];
+  const add = (type, pos, label="", star=false) => {
+    const i = atoms.length;
+    atoms.push({type, pos:[...pos], label, star});
+    return i;
+  };
+  const cc = ring.map((p,i)=>add("C", p, i===0||i===2 ? "C*" : "C", i===0||i===2));
+  for(let i=0;i<6;i++) bonds.push([cc[i], cc[(i+1)%6]]);
+
+  // C1 stereocentre
+  {
+    const [front, back] = tetra(ring[0], ring[5], ring[1]);
+    const oDir = front;
+    const hDir = back;
+
+    const oPos = V.add(ring[0], V.mul(oDir, 0.98));
+    const o = add("O", oPos, "O");
+    const hOnCarbon = add("H", V.add(ring[0], V.mul(hDir, 0.82)), "H");
+    bonds.push([cc[0], o], [cc[0], hOnCarbon]);
+
+    const hoDir = bentOHHydrogenDirection(oDir);
+    const hOnO = add("H", V.add(oPos, V.mul(hoDir, 0.56)), "H");
+    bonds.push([o, hOnO]);
+  }
+
+  // C3 stereocentre: pair 1 has Br opposite face to OH; pair 2 has Br same face as OH
+  {
+    const [front, back] = tetra(ring[2], ring[1], ring[3]);
+    const brDir = (pair === 1) ? back : front;
+    const hDir  = (pair === 1) ? front : back;
+    const br = add("Br", V.add(ring[2], V.mul(brDir, 1.12)), "Br");
+    const h  = add("H",  V.add(ring[2], V.mul(hDir,  0.82)), "H");
+    bonds.push([cc[2], br], [cc[2], h]);
+  }
+
+  if (mirror){
+    atoms.forEach(a => a.pos[0] *= -1);
+  }
+  return {atoms, bonds};
+}
+
+function rotate(p, rx, ry){
+  let [x,y,z] = p;
+  let c=Math.cos(rx), s=Math.sin(rx);
+  [y,z] = [y*c-z*s, y*s+z*c];
+  c=Math.cos(ry); s=Math.sin(ry);
+  [x,z] = [x*c+z*s, -x*s+z*c];
+  return [x,y,z];
+}
+
+function shade(hex, amt){
+  const n = parseInt(hex.slice(1), 16);
+  let r=(n>>16)+amt, g=((n>>8)&255)+amt, b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r));
+  g=Math.max(0,Math.min(255,g));
+  b=Math.max(0,Math.min(255,b));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+class View{
+  constructor(id, pair, mirror){
+    this.canvas = document.getElementById(id);
+    this.ctx = this.canvas.getContext("2d");
+    this.pair = pair;
+    this.mirror = mirror;
+    this.rx = -0.15;
+    this.ry = 0.20;
+    this.drag = false;
+    this.last = [0,0];
+    new ResizeObserver(()=>this.resize()).observe(this.canvas.parentElement);
+    this.bind();
+    this.resize();
+  }
+  bind(){
+    this.canvas.onpointerdown = (e) => {
+      this.drag = true;
+      this.last = [e.clientX, e.clientY];
+      this.canvas.setPointerCapture(e.pointerId);
+    };
+    this.canvas.onpointermove = (e) => {
+      if(!this.drag) return;
+      const dx = e.clientX - this.last[0];
+      const dy = e.clientY - this.last[1];
+      this.last = [e.clientX, e.clientY];
+      this.rx += dy * 0.008;
+      this.ry += dx * 0.008;
+      this.draw();
+    };
+    this.canvas.onpointerup = ()=> this.drag = false;
+    this.canvas.onpointercancel = ()=> this.drag = false;
+  }
+  resize(){
+    const r = this.canvas.parentElement.getBoundingClientRect();
+    const d = Math.min(2, window.devicePixelRatio || 1);
+    this.canvas.width = Math.round(r.width * d);
+    this.canvas.height = Math.round(r.height * d);
+    this.canvas.style.width = r.width + "px";
+    this.canvas.style.height = r.height + "px";
+    this.ctx.setTransform(d,0,0,d,0,0);
+    this.w = r.width;
+    this.h = r.height;
+    this.draw();
+  }
+  project(p){
+    const q = rotate(p, this.rx, this.ry);
+    const cam = 6.7;
+    const per = cam / (cam - q[2]);
+    const sc = Math.min(this.w, this.h) * 0.16;
+    return {x:this.w/2 + q[0]*sc*per, y:this.h/2 - q[1]*sc*per, z:q[2], s:per};
+  }
+  drawBond(a, b){
+    const x = this.ctx;
+    x.strokeStyle = COLORS.bond;
+    x.lineWidth = 8 * Math.min(a.s, b.s);
+    x.lineCap = "round";
+    x.beginPath();
+    x.moveTo(a.x, a.y);
+    x.lineTo(b.x, b.y);
+    x.stroke();
+  }
+  drawAtom(atom, p){
+    const x = this.ctx;
+    const r = RADII[atom.type] * Math.min(this.w, this.h) * 0.085 * p.s;
+    const base = atom.star ? COLORS.star : COLORS[atom.type];
+    const g = x.createRadialGradient(p.x-r*.35, p.y-r*.35, r*.12, p.x, p.y, r);
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(.20, base);
+    g.addColorStop(1, shade(base, -34));
+    x.fillStyle = g;
+    x.beginPath();
+    x.arc(p.x, p.y, r, 0, Math.PI*2);
+    x.fill();
+    x.strokeStyle = "rgba(20,45,65,.20)";
+    x.lineWidth = 1;
+    x.stroke();
+
+    if (atom.star) {
+      x.strokeStyle = "#f2c45e";
+      x.lineWidth = 3;
+      x.beginPath();
+      x.arc(p.x, p.y, r+5, 0, Math.PI*2);
+      x.stroke();
+    }
+
+    x.font = `700 ${Math.max(12, Math.min(17, r*.95))}px Inter,system-ui,sans-serif`;
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillStyle = atom.type === "H" ? "#42566a" : "#ffffff";
+    x.fillText(atom.label, p.x, p.y);
+  }
+  draw(){
+    if(!this.w) return;
+    const x = this.ctx;
+    x.clearRect(0,0,this.w,this.h);
+
+    const m = build(this.pair, this.mirror);
+    const P = m.atoms.map(a => this.project(a.pos));
+
+    m.bonds
+      .map(([i,j]) => ({i,j,z:(P[i].z+P[j].z)/2}))
+      .sort((a,b)=>a.z-b.z)
+      .forEach(o => this.drawBond(P[o.i], P[o.j]));
+
+    m.atoms
+      .map((a,i)=>({a,i,z:P[i].z}))
+      .sort((a,b)=>a.z-b.z)
+      .forEach(o => this.drawAtom(o.a, P[o.i]));
+  }
+  reset(){ this.rx = -0.15; this.ry = 0.20; this.draw(); }
+}
+
+const views = [
+  new View("c1", 1, false),
+  new View("c2", 1, true),
+  new View("c3", 2, false),
+  new View("c4", 2, true)
+];
+
+document.getElementById("resetAll").onclick = () => views.forEach(v => v.reset());
+})();
+</script>
+</body>
+</html>
